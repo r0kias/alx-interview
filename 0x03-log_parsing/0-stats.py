@@ -1,54 +1,35 @@
 #!/usr/bin/python3
-
+"""log parsing"""
 import sys
 
 
-def print_msg(dict_sc, total_file_size):
-    """
-    Method to print
-    Args:
-        dict_sc: dict of status codes
-        total_file_size: total of the file
-    Returns:
-        Nothing
-    """
-
-    print("File size: {}".format(total_file_size))
-    for key, val in sorted(dict_sc.items()):
-        if val != 0:
-            print("{}: {}".format(key, val))
+def print_data(total_file_size, status_code_data):
+    """prints total size and status code count"""
+    print('File size: {}'.format(total_file_size))
+    for k, v in sorted(status_code_data.items()):
+        if v != 0:
+            print('{}: {}'.format(k, v))
 
 
+status_codes = ['200', '301', '400', '401', '403', '404', '405', '500']
+status_code_data = {code: 0 for code in status_codes}
 total_file_size = 0
-code = 0
-counter = 0
-dict_sc = {"200": 0,
-           "301": 0,
-           "400": 0,
-           "401": 0,
-           "403": 0,
-           "404": 0,
-           "405": 0,
-           "500": 0}
-
 try:
+    count = 0
     for line in sys.stdin:
-        parsed_line = line.split()  # ✄ trimming
-        parsed_line = parsed_line[::-1]  # inverting
-
-        if len(parsed_line) > 2:
-            counter += 1
-
-            if counter <= 10:
-                total_file_size += int(parsed_line[0])  # file size
-                code = parsed_line[1]  # status code
-
-                if (code in dict_sc.keys()):
-                    dict_sc[code] += 1
-
-            if (counter == 10):
-                print_msg(dict_sc, total_file_size)
-                counter = 0
-
-finally:
-    print_msg(dict_sc, total_file_size)
+        splitstr = line.split()
+        try:
+            total_file_size += int(splitstr[-1])
+            code = splitstr[-2]
+            if code in status_code_data:
+                count += 1
+                status_code_data[code] += 1
+                if count % 10 == 0:
+                    print_data(total_file_size, status_code_data)
+        except:
+            pass
+except KeyboardInterrupt:
+    print_data(total_file_size, status_code_data)
+    raise
+else:
+    print_data(total_file_size, status_code_data)
